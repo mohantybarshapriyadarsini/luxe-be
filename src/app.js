@@ -11,6 +11,8 @@ app.use(cors({
     'https://luxe-aecf.onrender.com',
     'https://luxe-pi-henna.vercel.app',
     'https://luxe-1.onrender.com',
+    'https://luxecartify.co.in',
+    'https://www.luxecartify.co.in',
   ],
   credentials: true,
 }));
