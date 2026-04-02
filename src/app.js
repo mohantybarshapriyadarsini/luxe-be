@@ -24,7 +24,6 @@ app.use('/api/orders',   require('./routes/orderRoutes'));
 app.use('/api/admin',    require('./routes/adminRoutes'));
 
 // Saler routes (brand login/register from frontend)
-const salerApp = require('../Saler/src/app');
 app.use('/api/salers', require('../Saler/src/routes/salerRoutes'));
 
 app.get('/api/config/razorpay', (req, res) => {
