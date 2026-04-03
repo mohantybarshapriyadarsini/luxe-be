@@ -2,7 +2,25 @@ const mongoose = require('mongoose');
 const app      = require('./src/app');
 require('dotenv').config();
 
+const cloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME;
+const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
+const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
+
+if (cloudinaryCloudName && cloudinaryApiKey && cloudinaryApiSecret) {
+  const cloudinary = require('cloudinary').v2;
+  cloudinary.config({
+    cloud_name: cloudinaryCloudName,
+    api_key: cloudinaryApiKey,
+    api_secret: cloudinaryApiSecret,
+  });
+}
+
 const PORT = process.env.PORT || 5000;
+
+const cloudinaryFetch = (imageUrl) => {
+  if (!cloudinaryCloudName) return imageUrl;
+  return `https://res.cloudinary.com/${cloudinaryCloudName}/image/fetch/c_fill,w_800,q_auto,f_auto/${encodeURIComponent(imageUrl)}`;
+};
 
 const IMG = {
   // Louis Vuitton
@@ -48,18 +66,33 @@ const IMG = {
   h_twilly:       'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
 
   // Rolex
-  r_sub:          'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=600&q=80',
-  r_datejust:     'https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=600&q=80',
-  r_daytona:      'https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=600&q=80',
-  r_gmt:          'https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?w=600&q=80',
-  r_daydate:      'https://images.unsplash.com/photo-1639037005180-0e7e4e3e9b5e?w=600&q=80',
-  r_explorer:     'https://images.unsplash.com/photo-1548171915-e79a380a2a4b?w=600&q=80',
-  r_skydweller:   'https://images.unsplash.com/photo-1612817288484-6f916006741a?w=600&q=80',
-  r_yachtmaster:  'https://images.unsplash.com/photo-1622434641406-a158123450f9?w=600&q=80',
-  r_milgauss:     'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=600&q=80',
-  r_pearlmaster:  'https://images.unsplash.com/photo-1639037005180-0e7e4e3e9b5e?w=600&q=80',
-  r_cellini:      'https://images.unsplash.com/photo-1614164185128-e4ec99c436d7?w=600&q=80',
-  r_datejust31:   'https://images.unsplash.com/photo-1622434641406-a158123450f9?w=600&q=80',
+  r_sub:          'https://images.unsplash.com/photo-1565372915220-08a257a03bf2?w=600&q=80',
+  r_datejust:     'https://images.unsplash.com/photo-1606078547826-66350aa4e582?w=600&q=80',
+  r_daytona:      'https://images.unsplash.com/photo-1615438286695-1fb8ed5bc8fd?w=600&q=80',
+  r_gmt:          'https://images.unsplash.com/photo-159835705b0c516?auto=format&fit=crop&w=600&q=80',
+  r_daydate:      'https://images.unsplash.com/photo-1448486137621-8d99a8d35fef?w=600&q=80',
+  r_daydate2:     'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',
+  r_explorer:     'https://images.unsplash.com/photo-1550071454-26e7f0c0e1aa?w=600&q=80',
+  r_skydweller:   'https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?w=600&q=80',
+  r_yachtmaster:  'https://images.unsplash.com/photo-1561336315-dfdc364d6cc4?w=600&q=80',
+  r_pearlmaster:  'https://images.unsplash.com/photo-1583015600025-c9bd7e505b73?w=600&q=80',
+  r_cellini:      'https://images.unsplash.com/photo-1618516308542-020a67f3f87a?w=600&q=80',
+  r_datejust31:   'https://images.unsplash.com/photo-1516916055493-af84c167e013?w=600&q=80',
+  r_submariner2:  'https://images.unsplash.com/photo-1542860197-6308a7c9a281?w=600&q=80',
+  r_cosmograph:  'https://images.unsplash.com/photo-1525610553991-2bede1a236e2?w=600&q=80',
+  r_milgauss2:   'https://images.unsplash.com/photo-1519741491466-e543c7b83591?w=600&q=80',
+
+  // Chanel Watches
+  ch_j12:         'https://images.unsplash.com/photo-1464375117522-1311d4e1256c?w=600&q=80',
+  ch_premiere:    'https://images.unsplash.com/photo-1518562475002-4ec49cbd02f1?w=600&q=80',
+
+  // Hermès Watches
+  h_capecod:      'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&q=80',
+  h_arceau:       'https://images.unsplash.com/photo-1519709174956-9f2d6554b7e6?w=600&q=80',
+
+  // Louis Vuitton Watches
+  lv_tambour:     'https://images.unsplash.com/photo-1541976076758-6dcf1fb05038?w=600&q=80',
+  lv_moon:        'https://images.unsplash.com/photo-1458253329476-1ebb8593a652?w=600&q=80',
 
   // Gucci
   g_marmont:      'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=600&q=80',
@@ -74,6 +107,30 @@ const IMG = {
   g_necklace:     'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80',
   g_belt:         'https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=600&q=80',
   g_scarf:        'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=600&q=80',
+
+  // Omega Watches
+  o_seamaster:    'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=600&q=80',
+  o_speedmaster:  'https://images.unsplash.com/photo-1519659520444-1b8a2a2b5fd1?w=600&q=80',
+  o_constellation:'https://images.unsplash.com/photo-1516097132797-4ecf9da6d543?w=600&q=80',
+  o_deville:      'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=600&q=80',
+
+  // TAG Heuer Watches
+  t_carrera:      'https://images.unsplash.com/photo-1553462308-0661c7546c84?w=600&q=80',
+  t_aquaracer:    'https://images.unsplash.com/photo-1516883465372-0ec1f2d4cbad?w=600&q=80',
+  t_monaco:       'https://images.unsplash.com/photo-1514960565813-22f4da4fbeda?w=600&q=80',
+  t_formula:      'https://images.unsplash.com/photo-1526470608268-f674ce90ebd4?w=600&q=80',
+
+  // Breitling Watches
+  b_navitimer:    'https://images.unsplash.com/photo-1526481280694-3be3666dbcb0?w=600&q=80',
+  b_superocean:   'https://images.unsplash.com/photo-1576096849400-b1ba30a88f72?w=600&q=80',
+  b_chronomat:    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80',
+  b_avenger:      'https://images.unsplash.com/photo-1548625149-2bf3293c78bc?w=600&q=80',
+
+  // Cartier Watches
+  c_tank:         'https://images.unsplash.com/photo-1563362399-2cb3b2f4f642?w=600&q=80',
+  c_santos:       'https://images.unsplash.com/photo-1513871527-7b37edd0d9e9?w=600&q=80',
+  c_ballon:       'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',
+  c_pantherre:    'https://images.unsplash.com/photo-1519741491466-e543c7b83591?w=600&q=80',
 
   // Prada
   p_saffiano:     'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&q=80',
@@ -108,6 +165,13 @@ const IMG = {
   dy_accessory:   'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=600&q=80',
 };
 
+// Use Cloudinary fetch wrapper for all images when Cloudinary is configured
+for (const key in IMG) {
+  if (IMG.hasOwnProperty(key)) {
+    IMG[key] = cloudinaryFetch(IMG[key]);
+  }
+}
+
 const PRODUCTS_SEED = [
 
   // ════════════════════════════════
@@ -138,7 +202,6 @@ const PRODUCTS_SEED = [
   { name: 'Première Watch',           brand: 'Chanel', category: 'Watches',     price: 4900,  featured: false, image: IMG.ch_premiere,    description: 'Chanel Première in steel with black lacquered dial.' },
   { name: 'Diamond Tennis Bracelet',  brand: 'Chanel', category: 'Jewellery',   price: 8500,  featured: false, image: IMG.ch_tennis,      description: 'Elegant diamond tennis bracelet in 18k white gold.' },
   { name: 'Camellia Pearl Necklace',  brand: 'Chanel', category: 'Jewellery',   price: 4200,  featured: false, image: IMG.ch_camellia,    description: 'Chanel Camellia pearl necklace in 18k white gold with diamond accents.' },
-  { name: 'Coco Crush Ring',          brand: 'Chanel', category: 'Jewellery',   price: 3100,  featured: false, image: IMG.ch_cococrush,   description: 'Chanel Coco Crush ring in 18k beige gold with quilted motif.' },
   { name: 'Slingback Pumps',          brand: 'Chanel', category: 'Shoes',       price: 1150,  featured: false, image: IMG.ch_slingback,   description: 'Classic Chanel two-tone slingback pumps in grosgrain and lambskin.' },
   { name: 'Cap-Toe Ballet Flats',     brand: 'Chanel', category: 'Shoes',       price: 980,   featured: false, image: IMG.ch_ballet,      description: 'Chanel cap-toe ballet flats in lambskin with interlocking CC.' },
 
@@ -165,14 +228,46 @@ const PRODUCTS_SEED = [
   { name: 'Datejust 41',              brand: 'Rolex', category: 'Watches', price: 12000, featured: false, image: IMG.r_datejust,    description: 'Rolex Datejust 41 in Oystersteel and yellow gold with fluted bezel.' },
   { name: 'Daytona Chronograph',      brand: 'Rolex', category: 'Watches', price: 35000, featured: true,  image: IMG.r_daytona,     description: 'Rolex Cosmograph Daytona in 18ct Everose gold.' },
   { name: 'GMT-Master II Pepsi',      brand: 'Rolex', category: 'Watches', price: 16800, featured: true,  image: IMG.r_gmt,         description: 'Rolex GMT-Master II in Oystersteel with Jubilee bracelet — Pepsi bezel.' },
-  { name: 'Day-Date 40',              brand: 'Rolex', category: 'Watches', price: 42000, featured: true,  image: IMG.r_daydate,     description: 'Rolex Day-Date 40 in 18ct yellow gold with President bracelet.' },
   { name: 'Explorer II',              brand: 'Rolex', category: 'Watches', price: 13500, featured: false, image: IMG.r_explorer,    description: 'Rolex Explorer II in Oystersteel — built for extreme environments.' },
   { name: 'Sky-Dweller',              brand: 'Rolex', category: 'Watches', price: 48000, featured: false, image: IMG.r_skydweller,  description: 'Rolex Sky-Dweller in 18ct white gold with annual calendar.' },
   { name: 'Yacht-Master 42',          brand: 'Rolex', category: 'Watches', price: 22500, featured: false, image: IMG.r_yachtmaster, description: 'Rolex Yacht-Master 42 in Oystersteel with Oysterflex bracelet.' },
   { name: 'Milgauss',                 brand: 'Rolex', category: 'Watches', price: 11200, featured: false, image: IMG.r_milgauss,    description: 'Rolex Milgauss in Oystersteel — resistant to magnetic fields up to 1000 gauss.' },
   { name: 'Pearlmaster 39',           brand: 'Rolex', category: 'Watches', price: 55000, featured: false, image: IMG.r_pearlmaster, description: 'Rolex Pearlmaster 39 in 18ct Everose gold set with diamonds.' },
-  { name: 'Cellini Time',             brand: 'Rolex', category: 'Watches', price: 18000, featured: false, image: IMG.r_cellini,     description: 'Rolex Cellini Time in 18ct white gold — classic dress watch.' },
   { name: 'Datejust 31 Ladies',       brand: 'Rolex', category: 'Watches', price: 10500, featured: false, image: IMG.r_datejust31,  description: 'Rolex Datejust 31 in Oystersteel with diamond-set bezel.' },
+  { name: 'Cosmograph Daytona',        brand: 'Rolex', category: 'Watches', price: 38000, featured: true,  image: IMG.r_cosmograph, description: 'Rolex Daytona in Oystersteel with black dial and tachymeter bezel.' },
+  { name: 'Cellini Date',             brand: 'Rolex', category: 'Watches', price: 17200, featured: false, image: IMG.r_cellini2,    description: 'Rolex Cellini Date in 18k Everose gold with leather strap.' },
+
+  // ════════════════════════════════
+  // OMEGA — 4 Watches
+  // ════════════════════════════════
+  { name: 'Seamaster Diver 300M',     brand: 'Omega', category: 'Watches', price: 7200,  featured: true,  image: IMG.o_seamaster,    description: 'Omega Seamaster Diver 300M in stainless steel. Licensed by James Bond for underwater exploration.' },
+  { name: 'Speedmaster Professional', brand: 'Omega', category: 'Watches', price: 6800,  featured: true,  image: IMG.o_speedmaster,  description: 'Omega Speedmaster Professional — the watch worn on the Moon in 1969.' },
+  { name: 'Constellation Co-Axial',   brand: 'Omega', category: 'Watches', price: 5500,  featured: false, image: IMG.o_constellation, description: 'Omega Constellation in 18k gold with master chronometer certified calibre.' },
+  { name: 'DeVille Prestige Watch',   brand: 'Omega', category: 'Watches', price: 4900,  featured: false, image: IMG.o_deville,      description: 'Omega DeVille Prestige dress watch in polished stainless steel.' },
+
+  // ════════════════════════════════
+  // TAG HEUER — 4 Watches
+  // ════════════════════════════════
+  { name: 'Carrera Chronograph',      brand: 'TAG Heuer', category: 'Watches', price: 4500,  featured: true,  image: IMG.t_carrera,    description: 'TAG Heuer Carrera chronograph — iconic racing watch in stainless steel.' },
+  { name: 'Aquaracer Professional',   brand: 'TAG Heuer', category: 'Watches', price: 3800,  featured: true,  image: IMG.t_aquaracer,  description: 'TAG Heuer Aquaracer Professional diving watch. Water-resistant to 300m.' },
+  { name: 'Monaco Automatic',         brand: 'TAG Heuer', category: 'Watches', price: 6500,  featured: false, image: IMG.t_monaco,     description: 'TAG Heuer Monaco — legendary square chronograph associated with Steve McQueen.' },
+  { name: 'Formula 1 Quartz',         brand: 'TAG Heuer', category: 'Watches', price: 2200,  featured: false, image: IMG.t_formula,    description: 'TAG Heuer Formula 1 sports watch with quartz movement and steel case.' },
+
+  // ════════════════════════════════
+  // BREITLING — 4 Watches
+  // ════════════════════════════════
+  { name: 'Navitimer Automatic',      brand: 'Breitling', category: 'Watches', price: 8500,  featured: true,  image: IMG.b_navitimer,   description: 'Breitling Navitimer — classic pilot watch with circular slide rule.' },
+  { name: 'Superocean Heritage II',   brand: 'Breitling', category: 'Watches', price: 5800,  featured: true,  image: IMG.b_superocean,  description: 'Breitling Superocean Heritage II — retro-style diving watch with 42mm case.' },
+  { name: 'Chronomat Chronograph',    brand: 'Breitling', category: 'Watches', price: 7200,  featured: false, image: IMG.b_chronomat,   description: 'Breitling Chronomat automatic chronograph with rotating bezel.' },
+  { name: 'Avenger Chronograph',      brand: 'Breitling', category: 'Watches', price: 4800,  featured: false, image: IMG.b_avenger,     description: 'Breitling Avenger professional chronograph — rugged and reliable.' },
+
+  // ════════════════════════════════
+  // CARTIER — 4 Watches
+  // ════════════════════════════════
+  { name: 'Tank Française',           brand: 'Cartier', category: 'Watches', price: 5200,  featured: true,  image: IMG.c_tank,        description: 'Cartier Tank Française — quintessential Art Deco dress watch in 18k gold.' },
+  { name: 'Santos-Dumont Watch',      brand: 'Cartier', category: 'Watches', price: 4800,  featured: true,  image: IMG.c_santos,      description: 'Cartier Santos-Dumont — named after aviation pioneer Alberto Santos-Dumont.' },
+  { name: 'Ballon Bleu 42mm',         brand: 'Cartier', category: 'Watches', price: 5900,  featured: false, image: IMG.c_ballon,      description: 'Cartier Ballon Bleu with sapphire cabochon crown and automatic calibre.' },
+  { name: 'Panthère de Cartier',      brand: 'Cartier', category: 'Watches', price: 4600,  featured: false, image: IMG.c_pantherre,   description: 'Cartier Panthère women\'s watch in 18k gold with Cartier\'s iconic cougar motif.' },
 
   // ════════════════════════════════
   // GUCCI — 12 items
@@ -259,14 +354,22 @@ const PRODUCTS_SEED = [
 async function seedProducts() {
   const Product = require('./src/models/Product');
   await Product.deleteMany({});
-  await Product.insertMany(PRODUCTS_SEED);
-  console.log(`✅ ${PRODUCTS_SEED.length} products seeded across all brands`);
+  const DEFAULT_IMG = 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80';
+  const withDefaults = PRODUCTS_SEED.map(p => ({ ...p, image: p.image || DEFAULT_IMG }));
+  try {
+    await Product.insertMany(withDefaults, { ordered: false });
+  } catch(e) { console.log('Seed warning:', e.message.slice(0,100)); }
+  const count = await Product.countDocuments();
+  console.log('Products seeded: ' + count);
 }
 
 async function seedAdmin() {
   const Admin = require('./src/models/Admin');
-  // Always delete and reseed admin to ensure correct fields
-  await Admin.deleteMany({});
+  const exists = await Admin.findOne({ email: 'admin@luxe.com' });
+  if (exists) {
+    console.log('✅ Admin already exists — skipping seed');
+    return;
+  }
   await Admin.create({
     name:     'LUXE Admin',
     email:    'admin@luxe.com',
