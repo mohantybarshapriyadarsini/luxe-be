@@ -8,18 +8,19 @@ const generateToken = (id) =>
 
 // @POST /api/salers/register
 const registerSaler = async (req, res) => {
-  const { name, phone, email, password, brandInfo } = req.body;
+  const { name, phone, email, password, designation, brandInfo } = req.body;
   try {
     if (await Saler.findOne({ email }))
       return res.status(400).json({ message: 'Email already registered' });
 
-    const saler = await Saler.create({ name, phone, email, password, brandInfo });
+    const saler = await Saler.create({ name, phone, email, password, designation, brandInfo });
 
     res.status(201).json({
       _id: saler._id,
       name: saler.name,
       email: saler.email,
       phone: saler.phone,
+      designation: saler.designation,
       brandInfo: saler.brandInfo,
       isCertifiedBrand: saler.isCertifiedBrand,
       brandStatus: saler.isCertifiedBrand

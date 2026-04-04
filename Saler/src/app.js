@@ -13,5 +13,5 @@ app.use(express.json());
 app.use('/api/salers', require('./routes/salerRoutes'));
 
 app.use((req, res) => res.status(404).json({ message: 'Route not found' }));
-
+const paymentRoutes = require("./routes/paymentRoutes");
 module.exports = app;
